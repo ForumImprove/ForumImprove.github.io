@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Forum</title>
+  <style>
+    /* CSS styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    #container {
+      width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    #header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    #content {
+      margin-bottom: 20px;
+    }
+
+    .post-form input[type="text"],
+    .post-form textarea {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 5px;
+    }
+
+    .post-form button {
+      padding: 5px 10px;
+    }
+
+    .post {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+
+    .post .title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .post .author {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .post .content {
+      margin-bottom: 10px;
+    }
+
+    .post .voting {
+      margin-bottom: 10px;
+    }
+
+    .post .voting .vote-count {
+      margin-right: 10px;
+      font-weight: bold;
+    }
+
+    .post .comments {
+      margin-bottom: 10px;
+    }
+
+    .post .comments .comment {
+      margin-bottom: 5px;
+    }
+
+    .post .comments .comment .comment-author {
+      font-size: 12px;
+      font-style: italic;
+      color: #999;
+      margin-right: 5px;
+    }
+
+    .comment-form input[type="text"] {
+      width: 80%;
+      margin-bottom: 5px;
+      padding: 5px;
+    }
+
+    .comment-form button {
+      padding: 2px 5px;
+    }
+
+    #footer {
+      text-align: center;
+      font-size: 12px;
+      color: #999;
+    }
+  </style>
+  <script>
+    // JavaScript code
+    var posts = [];
+    var comments = [];
+
+    function createPost() {
+      var title = document.getElementById('post-title').value;
+      var author = document.getElementById('post-author').value;
+      var content = document.getElementById('post-content').value;
+      var postId = Date.now().toString();
+
+      var post = {
+        id: postId,
+        title: title,
+        author: author,
+        content: content,
+        votes: 0
+      };
+
+      posts.push(post);
+      saveComments();
+      loadPosts();
+
+      document.getElementById('post-title').value = '';
+      document.getElementById('post-author').value = '';
+      document.getElementById('post-content').value = '';
+    }
+
+    function createComment(postId) {
+      var commentInputId = 'comment-input-' + postId;
+      var commentContent = document.getElementById(commentInputId).value;
+
+      var comment = {
+        postId: postId,
+        content: commentContent
+      };
+
+      comments.push(comment);
+      saveComments();
+      loadPosts();
+
+      document.getElementById(commentInputId).value = '';
+    }
+
+    function loadPosts() {
+      var postsContainer = document.getElementById('posts-container');
+      postsContainer.innerHTML = '';
+
+      for (var i = 0; i < posts.length; i++) {
+        var post = posts[i];
+
+        var postElement = document.createElement('div');
+        postElement.classList.add('post');
+
+        var titleElement = document.createElement('h2');
+        titleElement.classList.add('title');
+        titleElement.textContent = post.title;
+
+        var authorElement = document.createElement('p');
+        authorElement.classList.add('author');
+        authorElement.textContent = 'Posted by: ' + post.author;
+
+        var contentElement = document.createElement('p');
+        contentElement.classList.add('content');
+        contentElement.textContent = post.content;
+
+        var votingElement = document.createElement('div');
+        votingElement.classList.add('voting');
+
+        var voteCountElement = document.createElement('span');
+        voteCountElement.classList.add('vote-count');
+        voteCountElement.textContent = 'Votes: ' + post.votes;
+
+        var upvoteButton = document.createElement('button');
+        upvoteButton.textContent = 'Upvote';
+        upvoteButton.onclick = function(id) {
+          return function() {
+            voteUp(id);
+          };
+        }(post.id);
+
+        var commentsElement = document.createElement('div');
+        commentsElement.classList.add('comments');
+
+        var commentsTitle = document.createElement('h3');
+        commentsTitle.textContent = 'Comments';
+
+        var commentForm = document.createElement('div');
+        commentForm.classList.add('comment-form');
+
+        var commentInput = document.createElement('input');
+        commentInput.type = 'text';
+        commentInput.id = 'comment-input-' + post.id;
+        commentInput.placeholder = 'Add a comment';
+
+        var commentButton = document.createElement('button');
+        commentButton.textContent = 'Comment';
+        commentButton.onclick = function(id) {
+          return function() {
+            createComment(id);
+          };
+        }(post.id);
+
+        for (var j = 0; j < comments.length; j++) {
+          var comment = comments[j];
+
+          if (comment.postId === post.id) {
+            var commentElement = document.createElement('div');
+            commentElement.classList.add('comment');
+
+            var commentAuthorElement = document.createElement('span');
+            commentAuthorElement.classList.add('comment-author');
+            commentAuthorElement.textContent = 'Posted by: Anonymous';
+
+            var commentContentElement = document.createElement('span');
+            commentContentElement.classList.add('comment-content');
+            commentContentElement.textContent = comment.content;
+
+            commentElement.appendChild(commentAuthorElement);
+            commentElement.appendChild(commentContentElement);
+            commentsElement.appendChild(commentElement);
+          }
+        }
+
+        postElement.appendChild(titleElement);
+        postElement.appendChild(authorElement);
+        postElement.appendChild(contentElement);
+        postElement.appendChild(votingElement);
+        postElement.appendChild(commentsTitle);
+        postElement.appendChild(commentsElement);
+
+        votingElement.appendChild(voteCountElement);
+        votingElement.appendChild(upvoteButton);
+
+        commentForm.appendChild(commentInput);
+        commentForm.appendChild(commentButton);
+
+        postElement.appendChild(commentForm);
+
+        postsContainer.appendChild(postElement);
+      }
+    }
+
+    function voteUp(postId) {
+      var post = posts.find(function(p) {
+        return p.id === postId;
+      });
+
+      if (post) {
+        post.votes++;
+        saveComments();
+        loadPosts();
+      }
+    }
+
+    function compareByVotes(a, b) {
+      return b.votes - a.votes;
+    }
+
+    function sortPostsByVotes() {
+      posts.sort(compareByVotes);
+    }
+
+    function saveComments() {
+      localStorage.setItem('comments', JSON.stringify(comments));
+    }
+
+    function loadComments() {
+      var storedComments = localStorage.getItem('comments');
+      if (storedComments) {
+        comments = JSON.parse(storedComments);
+      }
+    }
+
+    // Load comments on page load
+    loadComments();
+    // Load posts and display them
+    loadPosts();
+  </script>
+</head>
+<body>
+  <div id="container">
+    <div id="header">
+      <h1>My Forum</h1>
+    </div>
+    <div id="content">
+      <div class="post-form">
+        <h2>Create a Post:</h2>
+        <input type="text" id="post-title" placeholder="Title" required>
+        <input type="text" id="post-author" placeholder="Your Name" required>
+        <textarea id="post-content" rows="5" placeholder="Content" required></textarea>
+        <button onclick="createPost()">Submit</button>
+      </div>
+      <div id="posts-container"></div>
+    </div>
+    <div id="footer">
+      &copy; 2023 My Forum. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
