@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Forum</title>
+  <style>
+    /* CSS styles */
+    #container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+
+    #header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    #content {
+      margin-bottom: 20px;
+    }
+
+    .post {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .author {
+      font-style: italic;
+      margin-bottom: 5px;
+    }
+
+    .date {
+      margin-bottom: 10px;
+    }
+
+    .content {
+      margin-bottom: 10px;
+    }
+
+    .voting {
+      margin-bottom: 10px;
+    }
+
+    .vote-count {
+      font-weight: bold;
+    }
+
+    .comments {
+      margin-bottom: 10px;
+    }
+
+    .comment {
+      margin-bottom: 5px;
+    }
+
+    .comment-author {
+      font-weight: bold;
+    }
+
+    .comment-content {
+      margin-left: 20px;
+    }
+
+    .post-form {
+      margin-bottom: 20px;
+    }
+
+    .post-form input,
+    .post-form textarea {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    #footer {
+      text-align: center;
+    }
+  </style>
+  <script>
+    var posts = [];
+
+    var currentPostIndex = 0;
+    var postsPerPage = 2;
+
+    function loadPosts() {
+      var postsContainer = document.getElementById('posts-container');
+      postsContainer.innerHTML = ''; // Clear existing posts
+
+      var endIndex = currentPostIndex + postsPerPage;
+      var postsToLoad = posts.slice(currentPostIndex, endIndex);
+
+      postsToLoad.forEach(function(post) {
+        var postElement = createPostElement(post);
+        postsContainer.appendChild(postElement);
+      });
+
+      if (endIndex < posts.length) {
+        var loadMoreBtn = createLoadMoreButton();
+        postsContainer.appendChild(loadMoreBtn);
+      }
+    }
+
+    function createPostElement(post) {
+      var postElement = document.createElement('div');
+      postElement.className = 'post';
+      postElement.innerHTML = `
+        <div class="title">${post.title}</div>
+        <div class="author">Posted by: ${post.author}</div>
+        <div class="date">Posted on: ${post.date}</div>
+        <div class="content">
+          <p>${post.content}</p>
+        </div>
+        <div class="voting">
+          <div class="vote-count">${post.votes}</div>
+          <button onclick="voteUp(${post.id})">Upvote</button>
+        </div>
+        <div class="comments">
+          <h3>Comments:</h3>
+          ${createCommentsHTML(post.comments, post.id)}
+        </div>
+        <div class="post-form">
+          <h4>Add a Comment:</h4>
+          <input type="text" id="comment-author-${post.id}" placeholder="Your Name" required>
+          <textarea id="comment-content-${post.id}" rows="3" placeholder="Comment" required></textarea>
+          <button onclick="addComment(${post.id})">Submit</button>
+        </div>
+      `;
+
+      return postElement;
+    }
+
+    function createCommentsHTML(comments, postId) {
+      if (comments.length === 0) {
+        return '<p>No comments yet.</p>';
+      }
+
+      var commentsHTML = '';
+      comments.forEach(function(comment) {
+        commentsHTML += `
+          <div class="comment">
+            <div class="comment-author">${comment.author}</div>
+            <div class="comment-content">${comment.content}</div>
+          </div>
+        `;
+      });
+
+      return commentsHTML;
+    }
+
+    function createLoadMoreButton() {
+      var loadMoreBtn = document.createElement('button');
+      loadMoreBtn.id = 'load-more-btn';
+      loadMoreBtn.textContent = 'Load More';
+      loadMoreBtn.onclick = loadMorePosts;
+
+      return loadMoreBtn;
+    }
+
+    function loadMorePosts() {
+      currentPostIndex += postsPerPage;
+      loadPosts();
+    }
+
+    function voteUp(postId) {
+      var post = posts.find(function(p) {
+        return p.id === postId;
+      });
+
+      if (post) {
+        post.votes++;
+        loadPosts(); // Reload posts to update vote count
+      }
+    }
+
+    function addComment(postId) {
+      var authorInput = document.getElementById('comment-author-' + postId);
+      var contentInput = document.getElementById('comment-content-' + postId);
+      var author = authorInput.value;
+      var content = contentInput.value;
+
+      var post = posts.find(function(p) {
+        return p.id === postId;
+      });
+
+      if (post) {
+        post.comments.push({ author: author, content: content });
+        saveComments(); // Save the comments to localStorage
+        loadPosts(); // Reload posts to update comments
+      }
+
+      // Clear comment form fields
+      authorInput.value = '';
+      contentInput.value = '';
+    }
+
+    function saveComments() {
+      localStorage.setItem('forum-comments', JSON.stringify(posts));
+    }
+
+    function loadComments() {
+      var savedComments = localStorage.getItem('forum-comments');
+      if (savedComments) {
+        posts = JSON.parse(savedComments);
+      }
+    }
+
+    function createPost() {
+      var titleInput = document.getElementById('post-title');
+      var authorInput = document.getElementById('post-author');
+      var contentInput = document.getElementById('post-content');
+
+      var title = titleInput.value;
+      var author = authorInput.value;
+      var content = contentInput.value;
+
+      var post = {
+        id: Date.now(),
+        title: title,
+        author: author,
+        date: new Date().toLocaleDateString(),
+        content: content,
+        votes: 0,
+        comments: []
+      };
+
+      posts.unshift(post); // Add the new post to the beginning of the array
+      saveComments(); // Save the comments to localStorage
+
+      // Clear post form fields
+      titleInput.value = '';
+      authorInput.value = '';
+      contentInput.value = '';
+
+      loadPosts(); // Reload posts to display the new post
+    }
+
+    // Load comments on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      loadComments();
+      loadPosts();
+    });
+  </script>
+</head>
+<body>
+  <div id="container">
+    <div id="header">
+      <h1>My Forum</h1>
+    </div>
+    <div id="content">
+      <div class="post-form">
+        <h2>Create a Post:</h2>
+        <input type="text" id="post-title" placeholder="Title" required>
+        <input type="text" id="post-author" placeholder="Your Name" required>
+        <textarea id="post-content" rows="5" placeholder="Content" required></textarea>
+        <button onclick="createPost()">Submit</button>
+      </div>
+      <div id="posts-container"></div>
+    </div>
+    <div id="footer">
+      &copy; 2023 My Forum. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
