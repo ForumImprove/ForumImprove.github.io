@@ -1,301 +1,184 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My Forum</title>
+  <title>Forum</title>
   <style>
-    /* CSS styles */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-
-    #container {
-      width: 800px;
+    #post-container {
+      max-width: 600px;
       margin: 0 auto;
-      padding: 20px;
     }
-
-    #header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    #content {
-      margin-bottom: 20px;
-    }
-
-    .post-form input[type="text"],
-    .post-form textarea {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 5px;
-    }
-
-    .post-form button {
-      padding: 5px 10px;
-    }
-
     .post {
-      border: 1px solid #ccc;
-      padding: 10px;
       margin-bottom: 20px;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border: 1px solid #ddd;
     }
-
-    .post .title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-
-    .post .author {
-      font-size: 14px;
-      color: #666;
-      margin-bottom: 5px;
-    }
-
-    .post .content {
-      margin-bottom: 10px;
-    }
-
-    .post .voting {
-      margin-bottom: 10px;
-    }
-
-    .post .voting .vote-count {
-      margin-right: 10px;
-      font-weight: bold;
-    }
-
-    .post .comments {
-      margin-bottom: 10px;
-    }
-
-    .post .comments .comment {
-      margin-bottom: 5px;
-    }
-
-    .post .comments .comment .comment-author {
-      font-size: 12px;
-      font-style: italic;
-      color: #999;
-      margin-right: 5px;
-    }
-
-    .comment-form input[type="text"] {
-      width: 80%;
-      margin-bottom: 5px;
-      padding: 5px;
-    }
-
-    .comment-form button {
-      padding: 2px 5px;
-    }
-
-    #footer {
-      text-align: center;
-      font-size: 12px;
-      color: #999;
+    .hidden {
+      display: none;
     }
   </style>
-  <script>
-    // JavaScript code
-    var posts = [];
-    var comments = [];
-
-    function createPost() {
-      var title = document.getElementById('post-title').value;
-      var author = document.getElementById('post-author').value;
-      var content = document.getElementById('post-content').value;
-      var postId = Date.now().toString();
-
-      var post = {
-        id: postId,
-        title: title,
-        author: author,
-        content: content,
-        votes: 0
-      };
-
-      posts.push(post);
-      saveComments();
-      loadPosts();
-
-      document.getElementById('post-title').value = '';
-      document.getElementById('post-author').value = '';
-      document.getElementById('post-content').value = '';
-    }
-
-    function createComment(postId) {
-      var commentInputId = 'comment-input-' + postId;
-      var commentContent = document.getElementById(commentInputId).value;
-
-      var comment = {
-        postId: postId,
-        content: commentContent
-      };
-
-      comments.push(comment);
-      saveComments();
-      loadPosts();
-
-      document.getElementById(commentInputId).value = '';
-    }
-
-    function loadPosts() {
-      var postsContainer = document.getElementById('posts-container');
-      postsContainer.innerHTML = '';
-
-      for (var i = 0; i < posts.length; i++) {
-        var post = posts[i];
-
-        var postElement = document.createElement('div');
-        postElement.classList.add('post');
-
-        var titleElement = document.createElement('h2');
-        titleElement.classList.add('title');
-        titleElement.textContent = post.title;
-
-        var authorElement = document.createElement('p');
-        authorElement.classList.add('author');
-        authorElement.textContent = 'Posted by: ' + post.author;
-
-        var contentElement = document.createElement('p');
-        contentElement.classList.add('content');
-        contentElement.textContent = post.content;
-
-        var votingElement = document.createElement('div');
-        votingElement.classList.add('voting');
-
-        var voteCountElement = document.createElement('span');
-        voteCountElement.classList.add('vote-count');
-        voteCountElement.textContent = 'Votes: ' + post.votes;
-
-        var upvoteButton = document.createElement('button');
-        upvoteButton.textContent = 'Upvote';
-        upvoteButton.onclick = function(id) {
-          return function() {
-            voteUp(id);
-          };
-        }(post.id);
-
-        var commentsElement = document.createElement('div');
-        commentsElement.classList.add('comments');
-
-        var commentsTitle = document.createElement('h3');
-        commentsTitle.textContent = 'Comments';
-
-        var commentForm = document.createElement('div');
-        commentForm.classList.add('comment-form');
-
-        var commentInput = document.createElement('input');
-        commentInput.type = 'text';
-        commentInput.id = 'comment-input-' + post.id;
-        commentInput.placeholder = 'Add a comment';
-
-        var commentButton = document.createElement('button');
-        commentButton.textContent = 'Comment';
-        commentButton.onclick = function(id) {
-          return function() {
-            createComment(id);
-          };
-        }(post.id);
-
-        for (var j = 0; j < comments.length; j++) {
-          var comment = comments[j];
-
-          if (comment.postId === post.id) {
-            var commentElement = document.createElement('div');
-            commentElement.classList.add('comment');
-
-            var commentAuthorElement = document.createElement('span');
-            commentAuthorElement.classList.add('comment-author');
-            commentAuthorElement.textContent = 'Posted by: Anonymous';
-
-            var commentContentElement = document.createElement('span');
-            commentContentElement.classList.add('comment-content');
-            commentContentElement.textContent = comment.content;
-
-            commentElement.appendChild(commentAuthorElement);
-            commentElement.appendChild(commentContentElement);
-            commentsElement.appendChild(commentElement);
-          }
-        }
-
-        postElement.appendChild(titleElement);
-        postElement.appendChild(authorElement);
-        postElement.appendChild(contentElement);
-        postElement.appendChild(votingElement);
-        postElement.appendChild(commentsTitle);
-        postElement.appendChild(commentsElement);
-
-        votingElement.appendChild(voteCountElement);
-        votingElement.appendChild(upvoteButton);
-
-        commentForm.appendChild(commentInput);
-        commentForm.appendChild(commentButton);
-
-        postElement.appendChild(commentForm);
-
-        postsContainer.appendChild(postElement);
-      }
-    }
-
-    function voteUp(postId) {
-      var post = posts.find(function(p) {
-        return p.id === postId;
-      });
-
-      if (post) {
-        post.votes++;
-        saveComments();
-        loadPosts();
-      }
-    }
-
-    function compareByVotes(a, b) {
-      return b.votes - a.votes;
-    }
-
-    function sortPostsByVotes() {
-      posts.sort(compareByVotes);
-    }
-
-    function saveComments() {
-      localStorage.setItem('comments', JSON.stringify(comments));
-    }
-
-    function loadComments() {
-      var storedComments = localStorage.getItem('comments');
-      if (storedComments) {
-        comments = JSON.parse(storedComments);
-      }
-    }
-
-    // Load comments on page load
-    loadComments();
-    // Load posts and display them
-    loadPosts();
-  </script>
 </head>
 <body>
-  <div id="container">
-    <div id="header">
-      <h1>My Forum</h1>
-    </div>
-    <div id="content">
-      <div class="post-form">
-        <h2>Create a Post:</h2>
-        <input type="text" id="post-title" placeholder="Title" required>
-        <input type="text" id="post-author" placeholder="Your Name" required>
-        <textarea id="post-content" rows="5" placeholder="Content" required></textarea>
-        <button onclick="createPost()">Submit</button>
-      </div>
-      <div id="posts-container"></div>
-    </div>
-    <div id="footer">
-      &copy; 2023 My Forum. All rights reserved.
-    </div>
+  <div id="login-container">
+    <h1>Login</h1>
+    <form id="login-form">
+      <input type="password" id="password-input" placeholder="Enter password">
+      <br>
+      <button type="submit">Login</button>
+    </form>
+    <div id="error-message" class="hidden">Invalid password. Please try again.</div>
   </div>
+
+  <div id="post-container" class="hidden">
+    <h1>Forum</h1>
+
+    <form id="post-form">
+      <input type="text" id="post-title" placeholder="Title">
+      <br>
+      <textarea id="post-content" rows="4" placeholder="Write your post..."></textarea>
+      <br>
+      <button type="submit">Submit</button>
+    </form>
+
+    <div id="post-list"></div>
+    <div id="load-more" class="hidden"><button type="button" onclick="loadMorePosts()">Load More</button></div>
+  </div>
+
+  <script>
+    var posts = [];
+    var currentUserIndex = 1;
+    var postsPerPage = 5;
+    var currentPage = 1;
+
+    // Function to handle login form submission
+    function login() {
+      var password = document.getElementById('password-input').value;
+      var encodedPassword = encodeURIComponent(password); // Encode special characters
+
+      // Compare the encoded password with the encoded version of the desired password
+      if (encodedPassword === '1%25') { // Use encoded version of "1%"
+        // Save the password to local storage
+        localStorage.setItem('forumPassword', encodedPassword);
+
+        // Password correct, show the forum section
+        document.getElementById('login-container').classList.add('hidden');
+        document.getElementById('post-container').classList.remove('hidden');
+      } else {
+        // Password incorrect, show error message
+        document.getElementById('error-message').classList.remove('hidden');
+      }
+
+      return false; // Prevent form submission
+    }
+
+    // Attach the login function to the login form's submit event
+    document.getElementById('login-form').onsubmit = login;
+
+    // Function to save the post and display it on the page
+    function savePost() {
+      var postTitle = document.getElementById('post-title').value;
+      var postContent = document.getElementById('post-content').value;
+      var post = {
+        user: 'User' + currentUserIndex,
+        title: postTitle,
+        content: postContent,
+        votes: 0,
+        replies: []
+      };
+      posts.push(post);
+
+      // Save posts to local storage
+      localStorage.setItem('forumPosts', JSON.stringify(posts));
+
+      // Clear the title and content after saving
+      document.getElementById('post-title').value = '';
+      document.getElementById('post-content').value = '';
+
+      displayPosts();
+      return false; // Prevent form submission
+    }
+
+    // Attach the savePost function to the form's submit event
+    document.getElementById('post-form').onsubmit = savePost;
+
+    // Function to display the posts on the page
+    function displayPosts() {
+      var postList = document.getElementById('post-list');
+      postList.innerHTML = '';
+      var startIndex = (currentPage - 1) * postsPerPage;
+      var endIndex = startIndex + postsPerPage;
+
+      for (var i = startIndex; i < endIndex && i < posts.length; i++) {
+        var post = posts[i];
+        var postElement = document.createElement('div');
+        postElement.className = 'post';
+        postElement.innerHTML = '<h2>' + post.title + '</h2><p>By: ' + post.user + '</p><p>' + post.content + '</p>' +
+                                '<button onclick="vote(' + i + ', 1)">Upvote</button>' +
+                                '<button onclick="vote(' + i + ', -1)">Downvote</button>' +
+                                '<p>Votes: ' + post.votes + '</p>' +
+                                '<form onsubmit="replyToPost(' + i + '); return false;">' +
+                                '<input type="text" placeholder="Reply">' +
+                                '<button type="submit">Submit Reply</button>' +
+                                '</form>';
+
+        var replies = post.replies;
+        for (var j = 0; j < replies.length; j++) {
+          var replyElement = document.createElement('div');
+          replyElement.className = 'post reply';
+          replyElement.innerHTML = '<p>Reply by: ' + replies[j].user + '</p><p>' + replies[j].content + '</p>';
+          postElement.appendChild(replyElement);
+        }
+
+        postList.appendChild(postElement);
+      }
+
+      var loadMoreButton = document.getElementById('load-more');
+      if (endIndex < posts.length) {
+        loadMoreButton.classList.remove('hidden');
+      } else {
+        loadMoreButton.classList.add('hidden');
+      }
+    }
+
+    // Function to load more posts
+    function loadMorePosts() {
+      currentPage++;
+      displayPosts();
+    }
+
+    // Function to handle voting on a post
+    function vote(postIndex, value) {
+      var post = posts[postIndex];
+      post.votes += value;
+      displayPosts();
+    }
+
+    // Function to handle replying to a post
+    function replyToPost(postIndex) {
+      var replyInput = event.target.querySelector('input[type="text"]');
+      var replyContent = replyInput.value;
+      var post = posts[postIndex];
+      var reply = {
+        user: 'User' + currentUserIndex,
+        content: replyContent
+      };
+      post.replies.push(reply);
+      displayPosts();
+      replyInput.value = '';
+    }
+
+    // Retrieve posts from local storage
+    var storedPosts = localStorage.getItem('forumPosts');
+    if (storedPosts) {
+      posts = JSON.parse(storedPosts);
+      displayPosts();
+    }
+
+    // Retrieve password from local storage
+    var storedPassword = localStorage.getItem('forumPassword');
+    if (storedPassword) {
+      document.getElementById('password-input').value = decodeURIComponent(storedPassword);
+    }
+  </script>
 </body>
 </html>
