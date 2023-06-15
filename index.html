@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Forum Glitch</title>
+  <title>My Forum</title>
   <style>
     /* CSS styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
     #container {
-      max-width: 800px;
+      width: 800px;
       margin: 0 auto;
       padding: 20px;
-      font-family: Arial, sans-serif;
     }
 
     #header {
@@ -20,152 +25,220 @@
       margin-bottom: 20px;
     }
 
+    .post-form input[type="text"],
+    .post-form textarea {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 5px;
+    }
+
+    .post-form button {
+      padding: 5px 10px;
+    }
+
     .post {
       border: 1px solid #ccc;
       padding: 10px;
       margin-bottom: 20px;
     }
 
-    .title {
+    .post .title {
       font-size: 18px;
       font-weight: bold;
       margin-bottom: 5px;
     }
 
-    .author {
+    .post .author {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .post .content {
+      margin-bottom: 10px;
+    }
+
+    .post .voting {
+      margin-bottom: 10px;
+    }
+
+    .post .voting .vote-count {
+      margin-right: 10px;
+      font-weight: bold;
+    }
+
+    .post .comments {
+      margin-bottom: 10px;
+    }
+
+    .post .comments .comment {
+      margin-bottom: 5px;
+    }
+
+    .post .comments .comment .comment-author {
+      font-size: 12px;
       font-style: italic;
+      color: #999;
+      margin-right: 5px;
+    }
+
+    .comment-form input[type="text"] {
+      width: 80%;
       margin-bottom: 5px;
+      padding: 5px;
     }
 
-    .date {
-      margin-bottom: 10px;
-    }
-
-    .content {
-      margin-bottom: 10px;
-    }
-
-    .voting {
-      margin-bottom: 10px;
-    }
-
-    .vote-count {
-      font-weight: bold;
-    }
-
-    .comments {
-      margin-bottom: 10px;
-    }
-
-    .comment {
-      margin-bottom: 5px;
-    }
-
-    .comment-author {
-      font-weight: bold;
-    }
-
-    .comment-content {
-      margin-left: 20px;
-    }
-
-    .post-form {
-      margin-bottom: 20px;
-    }
-
-    .post-form input,
-    .post-form textarea {
-      width: 100%;
-      margin-bottom: 10px;
+    .comment-form button {
+      padding: 2px 5px;
     }
 
     #footer {
       text-align: center;
+      font-size: 12px;
+      color: #999;
     }
   </style>
   <script>
+    // JavaScript code
     var posts = [];
+    var comments = [];
 
-    var currentPostIndex = 0;
-    var postsPerPage = 2;
+    function createPost() {
+      var title = document.getElementById('post-title').value;
+      var author = document.getElementById('post-author').value;
+      var content = document.getElementById('post-content').value;
+      var postId = Date.now().toString();
+
+      var post = {
+        id: postId,
+        title: title,
+        author: author,
+        content: content,
+        votes: 0
+      };
+
+      posts.push(post);
+      saveComments();
+      loadPosts();
+
+      document.getElementById('post-title').value = '';
+      document.getElementById('post-author').value = '';
+      document.getElementById('post-content').value = '';
+    }
+
+    function createComment(postId) {
+      var commentInputId = 'comment-input-' + postId;
+      var commentContent = document.getElementById(commentInputId).value;
+
+      var comment = {
+        postId: postId,
+        content: commentContent
+      };
+
+      comments.push(comment);
+      saveComments();
+      loadPosts();
+
+      document.getElementById(commentInputId).value = '';
+    }
 
     function loadPosts() {
       var postsContainer = document.getElementById('posts-container');
-      postsContainer.innerHTML = ''; // Clear existing posts
+      postsContainer.innerHTML = '';
 
-      var endIndex = currentPostIndex + postsPerPage;
-      var postsToLoad = posts.slice(currentPostIndex, endIndex);
+      for (var i = 0; i < posts.length; i++) {
+        var post = posts[i];
 
-      postsToLoad.forEach(function(post) {
-        var postElement = createPostElement(post);
+        var postElement = document.createElement('div');
+        postElement.classList.add('post');
+
+        var titleElement = document.createElement('h2');
+        titleElement.classList.add('title');
+        titleElement.textContent = post.title;
+
+        var authorElement = document.createElement('p');
+        authorElement.classList.add('author');
+        authorElement.textContent = 'Posted by: ' + post.author;
+
+        var contentElement = document.createElement('p');
+        contentElement.classList.add('content');
+        contentElement.textContent = post.content;
+
+        var votingElement = document.createElement('div');
+        votingElement.classList.add('voting');
+
+        var voteCountElement = document.createElement('span');
+        voteCountElement.classList.add('vote-count');
+        voteCountElement.textContent = 'Votes: ' + post.votes;
+
+        var upvoteButton = document.createElement('button');
+        upvoteButton.textContent = 'Upvote';
+        upvoteButton.onclick = function(id) {
+          return function() {
+            voteUp(id);
+          };
+        }(post.id);
+
+        var commentsElement = document.createElement('div');
+        commentsElement.classList.add('comments');
+
+        var commentsTitle = document.createElement('h3');
+        commentsTitle.textContent = 'Comments';
+
+        var commentForm = document.createElement('div');
+        commentForm.classList.add('comment-form');
+
+        var commentInput = document.createElement('input');
+        commentInput.type = 'text';
+        commentInput.id = 'comment-input-' + post.id;
+        commentInput.placeholder = 'Add a comment';
+
+        var commentButton = document.createElement('button');
+        commentButton.textContent = 'Comment';
+        commentButton.onclick = function(id) {
+          return function() {
+            createComment(id);
+          };
+        }(post.id);
+
+        for (var j = 0; j < comments.length; j++) {
+          var comment = comments[j];
+
+          if (comment.postId === post.id) {
+            var commentElement = document.createElement('div');
+            commentElement.classList.add('comment');
+
+            var commentAuthorElement = document.createElement('span');
+            commentAuthorElement.classList.add('comment-author');
+            commentAuthorElement.textContent = 'Posted by: Anonymous';
+
+            var commentContentElement = document.createElement('span');
+            commentContentElement.classList.add('comment-content');
+            commentContentElement.textContent = comment.content;
+
+            commentElement.appendChild(commentAuthorElement);
+            commentElement.appendChild(commentContentElement);
+            commentsElement.appendChild(commentElement);
+          }
+        }
+
+        postElement.appendChild(titleElement);
+        postElement.appendChild(authorElement);
+        postElement.appendChild(contentElement);
+        postElement.appendChild(votingElement);
+        postElement.appendChild(commentsTitle);
+        postElement.appendChild(commentsElement);
+
+        votingElement.appendChild(voteCountElement);
+        votingElement.appendChild(upvoteButton);
+
+        commentForm.appendChild(commentInput);
+        commentForm.appendChild(commentButton);
+
+        postElement.appendChild(commentForm);
+
         postsContainer.appendChild(postElement);
-      });
-
-      if (endIndex < posts.length) {
-        var loadMoreBtn = createLoadMoreButton();
-        postsContainer.appendChild(loadMoreBtn);
       }
-    }
-
-    function createPostElement(post) {
-      var postElement = document.createElement('div');
-      postElement.className = 'post';
-      postElement.innerHTML = `
-        <div class="title">${post.title}</div>
-        <div class="author">Posted by: ${post.author}</div>
-        <div class="date">Posted on: ${post.date}</div>
-        <div class="content">
-          <p>${post.content}</p>
-        </div>
-        <div class="voting">
-          <div class="vote-count">${post.votes}</div>
-          <button onclick="voteUp(${post.id})">Upvote</button>
-        </div>
-        <div class="comments">
-          <h3>Comments:</h3>
-          ${createCommentsHTML(post.comments, post.id)}
-        </div>
-        <div class="post-form">
-          <h4>Add a Comment:</h4>
-          <input type="text" id="comment-author-${post.id}" placeholder="Your Name" required>
-          <textarea id="comment-content-${post.id}" rows="3" placeholder="Comment" required></textarea>
-          <button onclick="addComment(${post.id})">Submit</button>
-        </div>
-      `;
-
-      return postElement;
-    }
-
-    function createCommentsHTML(comments, postId) {
-      if (comments.length === 0) {
-        return '<p>No comments yet.</p>';
-      }
-
-      var commentsHTML = '';
-      comments.forEach(function(comment) {
-        commentsHTML += `
-          <div class="comment">
-            <div class="comment-author">${comment.author}</div>
-            <div class="comment-content">${comment.content}</div>
-          </div>
-        `;
-      });
-
-      return commentsHTML;
-    }
-
-    function createLoadMoreButton() {
-      var loadMoreBtn = document.createElement('button');
-      loadMoreBtn.id = 'load-more-btn';
-      loadMoreBtn.textContent = 'Load More';
-      loadMoreBtn.onclick = loadMorePosts;
-
-      return loadMoreBtn;
-    }
-
-    function loadMorePosts() {
-      currentPostIndex += postsPerPage;
-      loadPosts();
     }
 
     function voteUp(postId) {
@@ -175,83 +248,40 @@
 
       if (post) {
         post.votes++;
-        loadPosts(); // Reload posts to update vote count
+        saveComments();
+        loadPosts();
       }
     }
 
-    function addComment(postId) {
-      var authorInput = document.getElementById('comment-author-' + postId);
-      var contentInput = document.getElementById('comment-content-' + postId);
-      var author = authorInput.value;
-      var content = contentInput.value;
+    function compareByVotes(a, b) {
+      return b.votes - a.votes;
+    }
 
-      var post = posts.find(function(p) {
-        return p.id === postId;
-      });
-
-      if (post) {
-        post.comments.push({ author: author, content: content });
-        saveComments(); // Save the comments to localStorage
-        loadPosts(); // Reload posts to update comments
-      }
-
-      // Clear comment form fields
-      authorInput.value = '';
-      contentInput.value = '';
+    function sortPostsByVotes() {
+      posts.sort(compareByVotes);
     }
 
     function saveComments() {
-      localStorage.setItem('forum-comments', JSON.stringify(posts));
+      localStorage.setItem('comments', JSON.stringify(comments));
     }
 
     function loadComments() {
-      var savedComments = localStorage.getItem('forum-comments');
-      if (savedComments) {
-        posts = JSON.parse(savedComments);
+      var storedComments = localStorage.getItem('comments');
+      if (storedComments) {
+        comments = JSON.parse(storedComments);
       }
     }
 
-    function createPost() {
-      var titleInput = document.getElementById('post-title');
-      var authorInput = document.getElementById('post-author');
-      var contentInput = document.getElementById('post-content');
-
-      var title = titleInput.value;
-      var author = authorInput.value;
-      var content = contentInput.value;
-
-      var post = {
-        id: Date.now(),
-        title: title,
-        author: author,
-        date: new Date().toLocaleDateString(),
-        content: content,
-        votes: 0,
-        comments: []
-      };
-
-      posts.unshift(post); // Add the new post to the beginning of the array
-      saveComments(); // Save the comments to localStorage
-
-      // Clear post form fields
-      titleInput.value = '';
-      authorInput.value = '';
-      contentInput.value = '';
-
-      loadPosts(); // Reload posts to display the new post
-    }
-
     // Load comments on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      loadComments();
-      loadPosts();
-    });
+    loadComments();
+    // Load posts and display them
+    loadPosts();
   </script>
 </head>
 <body>
   <div id="container">
     <div id="header">
-      <h1>Forum Glitch</h1>
+      <h1>My Forum</h1>
     </div>
     <div id="content">
       <div class="post-form">
